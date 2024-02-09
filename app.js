@@ -26,6 +26,7 @@ app.post("/tasks", (req, res) => {
     const items = req.body;
     if(Validation.validateTaskInfo(items).status==true) {
       const details = data;
+      details.tasks['id'] = details.tasks.length+1;
       details.tasks.push(items);
       fs.writeFile('./task.json', JSON.stringify(details), {encoding:'utf-8', flag:'w'}, (err, data)=>{
           if(err) {
@@ -40,14 +41,19 @@ app.post("/tasks", (req, res) => {
 
 app.put('/tasks/:id',(req, res)=>{
     const id = req.params.id;
+    const newTask = req.body;
     const details = data; 
 
-    let task  =  details.tasks.findIndex(obj => obj.id == id);
-    if(task) {
-      details.tasks.splice(task, 1);
-      details.tasks.push(req.body);
-      return res.status(200).send('updated')
+   // let task  =  details.tasks.findIndex(obj => obj.id == id);
+   let task  =  data.tasks.find(task => task.id === parseInt(id));
+    if(!task) {
+      return res.status(404).send('could not find the item')
     }
+    task.title = newTask['title'];
+    task.description = newTask['description'];
+    task.completed = newTask['completed'];
+     //details.tasks.push(details);
+     return res.status(200).send('updated')
 
 
     /* let task = data.tasks.filter(item=>{
@@ -55,7 +61,7 @@ app.put('/tasks/:id',(req, res)=>{
             item=req.params;
         }
     }); */
-    return task;
+    //return task;
 });
 
 app.delete('/tasks/:id',(req, res)=>{
